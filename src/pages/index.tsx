@@ -8,24 +8,17 @@ import { useForm } from "react-hook-form";
 import v from "validator";
 import { z } from "zod";
 
+const decimal = z
+  .string()
+  .refine((value) => !v.isEmpty(value), "Must not be empty.")
+  .transform((value) => value.replaceAll(",", "."))
+  .refine(v.isFloat, "Must be a number.")
+  .transform((value) => new Decimal(value));
+
 const schema = z.object({
-  distance: z
-    .string()
-    .refine((value) => !v.isEmpty(value), "Must not be empty.")
-    .refine(v.isFloat, "Must be a number.")
-    .transform((value) => new Decimal(value)),
-
-  fuelConsumption: z
-    .string()
-    .refine((value) => !v.isEmpty(value), "Must not be empty.")
-    .refine(v.isFloat, "Must be a number.")
-    .transform((value) => new Decimal(value)),
-
-  fuelPrice: z
-    .string()
-    .refine((value) => !v.isEmpty(value), "Must not be empty.")
-    .refine(v.isFloat, "Must be a number.")
-    .transform((value) => new Decimal(value)),
+  distance: decimal,
+  fuelConsumption: decimal,
+  fuelPrice: decimal,
 });
 
 const Home = () => {
@@ -86,7 +79,7 @@ const Home = () => {
 
       {result && (
         <p className="text-center bg-gray-100 p-2 rounded">
-          You&apos;ll pay {result.toString()} zł for fuel.
+          You&apos;ll pay {result.toFixed(2)} zł for fuel.
         </p>
       )}
     </main>
