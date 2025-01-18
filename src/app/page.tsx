@@ -1,8 +1,9 @@
+"use client";
+
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Decimal from "decimal.js";
-import Head from "next/head";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import v from "validator";
@@ -21,7 +22,7 @@ const schema = z.object({
   fuelPrice: decimal,
 });
 
-const Home = () => {
+export default function Home() {
   const {
     register,
     handleSubmit,
@@ -33,14 +34,7 @@ const Home = () => {
   const [result, setResult] = useState<Decimal>();
 
   return (
-    <main className="p-4 min-h-screen flex flex-col justify-center gap-4">
-      <Head>
-        <meta charSet="utf-8" />
-        <meta content="width=device-width, initial-scale=1" name="viewport" />
-
-        <title>Fuel Price Calculator</title>
-      </Head>
-
+    <main className="p-4 min-h-screen flex flex-col justify-center gap-4 max-w-xl mx-auto">
       <h1 className="text-xl text-center">Fuel price calculator</h1>
 
       <form
@@ -84,6 +78,4 @@ const Home = () => {
       )}
     </main>
   );
-};
-
-export default Home;
+}
