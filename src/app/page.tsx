@@ -2,11 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Decimal from "decimal.js";
+import { m } from "motion/react";
 import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import v from "validator";
 import { z } from "zod";
 
+import { MFormItem } from "@/components/motion";
 import {
   Form,
   FormControl,
@@ -16,6 +18,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+
+const variants = {
+  hidden: { opacity: 0, scale: 0.8, filter: "blur(10px)" },
+  visible: { opacity: 1, scale: 1, filter: "blur(0px)" },
+};
 
 const decimal = z
   .string()
@@ -66,8 +73,15 @@ export default function Home() {
   }, [form, handleSubmit]);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-8 p-4">
-      <h1 className="text-center text-2xl font-bold">Fuel price calculator</h1>
+    <m.main
+      className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-8 p-4"
+      initial="hidden"
+      animate="visible"
+      transition={{ staggerChildren: 0.1 }}
+    >
+      <m.h1 variants={variants} className="text-center text-2xl font-bold">
+        Fuel price calculator
+      </m.h1>
 
       <Form {...form}>
         <form className="flex w-full flex-col gap-4">
@@ -75,7 +89,7 @@ export default function Home() {
             control={form.control}
             name="distance"
             render={({ field, fieldState }) => (
-              <FormItem>
+              <MFormItem variants={variants}>
                 <FormLabel
                   className={fieldState.isTouched ? undefined : "text-black"}
                 >
@@ -85,7 +99,7 @@ export default function Home() {
                   <Input {...field} />
                 </FormControl>
                 {fieldState.isTouched && <FormMessage />}
-              </FormItem>
+              </MFormItem>
             )}
           />
 
@@ -93,7 +107,7 @@ export default function Home() {
             control={form.control}
             name="fuelConsumption"
             render={({ field, fieldState }) => (
-              <FormItem>
+              <MFormItem variants={variants}>
                 <FormLabel
                   className={fieldState.isTouched ? undefined : "text-black"}
                 >
@@ -103,7 +117,7 @@ export default function Home() {
                   <Input {...field} />
                 </FormControl>
                 {fieldState.isTouched && <FormMessage />}
-              </FormItem>
+              </MFormItem>
             )}
           />
 
@@ -111,7 +125,7 @@ export default function Home() {
             control={form.control}
             name="fuelPrice"
             render={({ field, fieldState }) => (
-              <FormItem>
+              <MFormItem variants={variants}>
                 <FormLabel
                   className={fieldState.isTouched ? undefined : "text-black"}
                 >
@@ -121,11 +135,11 @@ export default function Home() {
                   <Input {...field} />
                 </FormControl>
                 {fieldState.isTouched && <FormMessage />}
-              </FormItem>
+              </MFormItem>
             )}
           />
 
-          <FormItem>
+          <MFormItem variants={variants}>
             <FormLabel>Travel price</FormLabel>
             <Input
               value={
@@ -133,9 +147,9 @@ export default function Home() {
               }
               disabled
             />
-          </FormItem>
+          </MFormItem>
         </form>
       </Form>
-    </main>
+    </m.main>
   );
 }
