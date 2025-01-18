@@ -1,10 +1,17 @@
 "use client";
 
-import Button from "@/components/Button";
-import Input from "@/components/Input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Decimal from "decimal.js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import v from "validator";
 import { z } from "zod";
@@ -23,59 +30,112 @@ const schema = z.object({
 });
 
 export default function Home() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<z.output<typeof schema>>({
+  const form = useForm<
+    z.input<typeof schema>,
+    unknown,
+    z.output<typeof schema>
+  >({
     resolver: zodResolver(schema),
+    shouldFocusError: false,
+    defaultValues: {
+      distance: "",
+      fuelConsumption: "",
+      fuelPrice: "",
+    },
+    mode: "onChange",
   });
 
   const [result, setResult] = useState<Decimal>();
 
+  const handleSubmit = ({
+    distance,
+    fuelConsumption,
+    fuelPrice,
+  }: z.output<typeof schema>) => {
+    setResult(
+      fuelConsumption.times(fuelPrice).times(distance.div(new Decimal(100)))
+    );
+  };
+
+  useEffect(() => {
+    const subscription = form.watch(() =>
+      form.handleSubmit(handleSubmit, () => setResult(undefined))()
+    );
+
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   return (
-    <main className="p-4 min-h-screen flex flex-col justify-center gap-4 max-w-xl mx-auto">
-      <h1 className="text-xl text-center">Fuel price calculator</h1>
+    <main className="p-4 min-h-screen flex flex-col justify-center gap-8 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold text-center">Fuel price calculator</h1>
 
-      <form
-        className="w-full flex flex-col gap-4"
-        onSubmit={handleSubmit(({ distance, fuelConsumption, fuelPrice }) =>
-          setResult(
-            fuelConsumption
-              .times(fuelPrice)
-              .times(distance.div(new Decimal(100)))
-          )
-        )}
-      >
-        <Input
-          {...register("distance")}
-          placeholder="Distance"
-          suffix="km"
-          error={errors.distance?.message}
-        />
+      <Form {...form}>
+        <form className="w-full flex flex-col gap-4">
+          <FormField
+            control={form.control}
+            name="distance"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel
+                  className={fieldState.isTouched ? undefined : "text-black"}
+                >
+                  Distance (km)
+                </FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                {fieldState.isTouched && <FormMessage />}
+              </FormItem>
+            )}
+          />
 
-        <Input
-          {...register("fuelConsumption")}
-          placeholder="Fuel consumption"
-          suffix="l/100 km"
-          error={errors.fuelConsumption?.message}
-        />
+          <FormField
+            control={form.control}
+            name="fuelConsumption"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel
+                  className={fieldState.isTouched ? undefined : "text-black"}
+                >
+                  Fuel consumption (l/100 km)
+                </FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                {fieldState.isTouched && <FormMessage />}
+              </FormItem>
+            )}
+          />
 
-        <Input
-          {...register("fuelPrice")}
-          placeholder="Fuel price"
-          suffix="zł/l"
-          error={errors.fuelPrice?.message}
-        />
+          <FormField
+            control={form.control}
+            name="fuelPrice"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel
+                  className={fieldState.isTouched ? undefined : "text-black"}
+                >
+                  Fuel price (zł/l)
+                </FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                {fieldState.isTouched && <FormMessage />}
+              </FormItem>
+            )}
+          />
 
-        <Button type="submit">CALCULATE</Button>
-      </form>
-
-      {result && (
-        <p className="text-center bg-gray-100 p-2 rounded">
-          You&apos;ll pay {result.toFixed(2)} zł for fuel.
-        </p>
-      )}
+          <FormItem>
+            <FormLabel>Travel price</FormLabel>
+            <Input
+              value={
+                result ? result.toFixed(2) : "Fill the form to see the result"
+              }
+              disabled
+            />
+          </FormItem>
+        </form>
+      </Form>
     </main>
   );
 }

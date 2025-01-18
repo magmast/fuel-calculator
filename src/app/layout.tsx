@@ -1,4 +1,5 @@
-import "tailwindcss/tailwind.css";
+import { Providers } from "@/components/providers";
+import "@/styles/globals.css";
 
 import { Metadata, Viewport } from "next";
 import { ReactNode } from "react";
@@ -15,7 +16,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
