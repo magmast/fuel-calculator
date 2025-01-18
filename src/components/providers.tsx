@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
 import { LazyMotion } from "motion/react";
+import { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (

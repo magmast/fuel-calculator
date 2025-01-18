@@ -1,5 +1,12 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import Decimal from "decimal.js";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import v from "validator";
+import { z } from "zod";
+
 import {
   Form,
   FormControl,
@@ -9,12 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Decimal from "decimal.js";
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import v from "validator";
-import { z } from "zod";
 
 const decimal = z
   .string()
@@ -53,24 +54,24 @@ export default function Home() {
     fuelPrice,
   }: z.output<typeof schema>) => {
     setResult(
-      fuelConsumption.times(fuelPrice).times(distance.div(new Decimal(100)))
+      fuelConsumption.times(fuelPrice).times(distance.div(new Decimal(100))),
     );
   };
 
   useEffect(() => {
     const subscription = form.watch(() =>
-      form.handleSubmit(handleSubmit, () => setResult(undefined))()
+      form.handleSubmit(handleSubmit, () => setResult(undefined))(),
     );
 
     return () => subscription.unsubscribe();
   }, [form]);
 
   return (
-    <main className="p-4 min-h-screen flex flex-col justify-center gap-8 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold text-center">Fuel price calculator</h1>
+    <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-8 p-4">
+      <h1 className="text-center text-2xl font-bold">Fuel price calculator</h1>
 
       <Form {...form}>
-        <form className="w-full flex flex-col gap-4">
+        <form className="flex w-full flex-col gap-4">
           <FormField
             control={form.control}
             name="distance"

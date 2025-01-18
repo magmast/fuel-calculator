@@ -1,8 +1,9 @@
-import { Providers } from "@/components/providers";
 import "@/styles/globals.css";
 
 import { Metadata, Viewport } from "next";
 import { ReactNode } from "react";
+
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Fuel Price Calculator",
