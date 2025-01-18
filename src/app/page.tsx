@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Decimal from "decimal.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import v from "validator";
 import { z } from "zod";
@@ -48,15 +48,14 @@ export default function Home() {
 
   const [result, setResult] = useState<Decimal>();
 
-  const handleSubmit = ({
-    distance,
-    fuelConsumption,
-    fuelPrice,
-  }: z.output<typeof schema>) => {
-    setResult(
-      fuelConsumption.times(fuelPrice).times(distance.div(new Decimal(100))),
-    );
-  };
+  const handleSubmit = useCallback(
+    ({ distance, fuelConsumption, fuelPrice }: z.output<typeof schema>) => {
+      setResult(
+        fuelConsumption.times(fuelPrice).times(distance.div(new Decimal(100))),
+      );
+    },
+    [],
+  );
 
   useEffect(() => {
     const subscription = form.watch(() =>
@@ -64,7 +63,7 @@ export default function Home() {
     );
 
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, handleSubmit]);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-8 p-4">
