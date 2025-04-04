@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Decimal from "decimal.js";
 import { m } from "motion/react";
+import { parseAsString, useQueryStates } from "nuqs";
 import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import v from "validator";
@@ -13,7 +14,6 @@ import {
   Form,
   FormControl,
   FormField,
-  FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
@@ -38,6 +38,15 @@ const schema = z.object({
 });
 
 export default function Home() {
+  const [query, setQuery] = useQueryStates(
+    {
+      distance: parseAsString.withDefault(""),
+      fuelConsumption: parseAsString.withDefault(""),
+      fuelPrice: parseAsString.withDefault(""),
+    },
+    { urlKeys: { distance: "d", fuelConsumption: "c", fuelPrice: "p" } },
+  );
+
   const form = useForm<
     z.input<typeof schema>,
     unknown,
@@ -46,9 +55,9 @@ export default function Home() {
     resolver: zodResolver(schema),
     shouldFocusError: false,
     defaultValues: {
-      distance: "",
-      fuelConsumption: "",
-      fuelPrice: "",
+      distance: query.distance,
+      fuelConsumption: query.fuelConsumption,
+      fuelPrice: query.fuelPrice,
     },
     mode: "onChange",
   });
@@ -64,13 +73,33 @@ export default function Home() {
     [],
   );
 
+  // Calculate result instantly if all query values are set
   useEffect(() => {
-    const subscription = form.watch(() =>
-      form.handleSubmit(handleSubmit, () => setResult(undefined))(),
+    try {
+      handleSubmit({
+        distance: new Decimal(query.distance),
+        fuelConsumption: new Decimal(query.fuelConsumption),
+        fuelPrice: new Decimal(query.fuelPrice),
+      });
+    } catch {
+      // Query values aren't valid. This isn't an issue. User will see errors
+      // after modifying the form.
+    }
+
+    // Only run this effect once, when the component mounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const subscription = form.watch(
+      ({ distance, fuelConsumption, fuelPrice }) => {
+        setQuery({ distance, fuelConsumption, fuelPrice });
+        form.handleSubmit(handleSubmit, () => setResult(undefined))();
+      },
     );
 
     return () => subscription.unsubscribe();
-  }, [form, handleSubmit]);
+  }, [form, handleSubmit, setQuery]);
 
   return (
     <m.main
