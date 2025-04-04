@@ -73,22 +73,24 @@ export default function Home() {
     [],
   );
 
-  // Calculate result instantly if all query values are set
+  // Calculate result when query values change
   useEffect(() => {
+    if (!query.distance || !query.fuelConsumption || !query.fuelPrice) {
+      return;
+    }
+
     try {
-      handleSubmit({
-        distance: new Decimal(query.distance),
-        fuelConsumption: new Decimal(query.fuelConsumption),
-        fuelPrice: new Decimal(query.fuelPrice),
+      const values = schema.parse({
+        distance: query.distance,
+        fuelConsumption: query.fuelConsumption,
+        fuelPrice: query.fuelPrice,
       });
+      handleSubmit(values);
     } catch {
       // Query values aren't valid. This isn't an issue. User will see errors
       // after modifying the form.
     }
-
-    // Only run this effect once, when the component mounts.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [query.distance, query.fuelConsumption, query.fuelPrice, handleSubmit]);
 
   useEffect(() => {
     const subscription = form.watch(
@@ -103,82 +105,122 @@ export default function Home() {
 
   return (
     <m.main
-      className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-8 p-4"
+      className="flex min-h-screen items-center bg-gradient-to-b from-background to-secondary/20 p-4 md:p-8"
       initial="hidden"
       animate="visible"
-      transition={{ staggerChildren: 0.1 }}
+      transition={{
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
+        when: "beforeChildren",
+      }}
     >
-      <m.h1 variants={variants} className="text-center text-2xl font-bold">
-        Fuel price calculator
-      </m.h1>
+      <m.div variants={variants} className="mx-auto w-full max-w-xl">
+        <m.div className="mb-12 space-y-4 text-center" variants={variants}>
+          <h1 className="text-4xl font-bold tracking-tight">
+            Fuel Price Calculator
+          </h1>
+          <p className="text-muted-foreground">
+            Calculate the cost of your journey based on distance and fuel
+            consumption
+          </p>
+        </m.div>
 
-      <Form {...form}>
-        <form className="flex w-full flex-col gap-4">
-          <FormField
-            control={form.control}
-            name="distance"
-            render={({ field, fieldState }) => (
-              <MFormItem variants={variants}>
-                <FormLabel
-                  className={fieldState.isTouched ? undefined : "text-black"}
-                >
-                  Distance (km)
-                </FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                {fieldState.isTouched && <FormMessage />}
-              </MFormItem>
-            )}
-          />
+        <m.div
+          className="rounded-lg border bg-card p-6 shadow-sm"
+          variants={variants}
+        >
+          <Form {...form}>
+            <form className="flex w-full flex-col gap-6">
+              <FormField
+                control={form.control}
+                name="distance"
+                render={({ field, fieldState }) => (
+                  <MFormItem variants={variants}>
+                    <FormLabel
+                      className={
+                        fieldState.isTouched ? undefined : "text-foreground"
+                      }
+                    >
+                      Distance (km)
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. 100" {...field} />
+                    </FormControl>
+                    {fieldState.isTouched && <FormMessage />}
+                  </MFormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="fuelConsumption"
-            render={({ field, fieldState }) => (
-              <MFormItem variants={variants}>
-                <FormLabel
-                  className={fieldState.isTouched ? undefined : "text-black"}
-                >
-                  Fuel consumption (l/100 km)
-                </FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                {fieldState.isTouched && <FormMessage />}
-              </MFormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="fuelConsumption"
+                render={({ field, fieldState }) => (
+                  <MFormItem variants={variants}>
+                    <FormLabel
+                      className={
+                        fieldState.isTouched ? undefined : "text-foreground"
+                      }
+                    >
+                      Fuel consumption (l/100 km)
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. 7.5" {...field} />
+                    </FormControl>
+                    {fieldState.isTouched && <FormMessage />}
+                  </MFormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="fuelPrice"
-            render={({ field, fieldState }) => (
-              <MFormItem variants={variants}>
-                <FormLabel
-                  className={fieldState.isTouched ? undefined : "text-black"}
-                >
-                  Fuel price (zł/l)
-                </FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                {fieldState.isTouched && <FormMessage />}
-              </MFormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="fuelPrice"
+                render={({ field, fieldState }) => (
+                  <MFormItem variants={variants}>
+                    <FormLabel
+                      className={
+                        fieldState.isTouched ? undefined : "text-foreground"
+                      }
+                    >
+                      Fuel price (zł/l)
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. 6.50" {...field} />
+                    </FormControl>
+                    {fieldState.isTouched && <FormMessage />}
+                  </MFormItem>
+                )}
+              />
 
-          <MFormItem variants={variants}>
-            <FormLabel>Travel price</FormLabel>
-            <Input
-              value={
-                result ? result.toFixed(2) : "Fill the form to see the result"
-              }
-              disabled
-            />
-          </MFormItem>
-        </form>
-      </Form>
+              <div className="space-y-2">
+                <FormLabel>Travel price (zł)</FormLabel>
+                <div className="relative">
+                  <Input
+                    value={
+                      result
+                        ? result.toFixed(2)
+                        : "Fill the form to see the result"
+                    }
+                    disabled
+                    className="bg-secondary/50 text-lg font-medium"
+                  />
+                  {result && (
+                    <m.div
+                      className="absolute right-3 top-1/2 text-sm text-muted-foreground"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transformTemplate={(_, generated) =>
+                        `${generated} translateY(-50%)`
+                      }
+                    >
+                      PLN
+                    </m.div>
+                  )}
+                </div>
+              </div>
+            </form>
+          </Form>
+        </m.div>
+      </m.div>
     </m.main>
   );
 }
