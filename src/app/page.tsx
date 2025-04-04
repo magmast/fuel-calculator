@@ -55,9 +55,9 @@ export default function Home() {
     resolver: zodResolver(schema),
     shouldFocusError: false,
     defaultValues: {
-      distance: query.distance,
-      fuelConsumption: query.fuelConsumption,
-      fuelPrice: query.fuelPrice,
+      distance: "",
+      fuelConsumption: "",
+      fuelPrice: "",
     },
     mode: "onChange",
   });
@@ -73,35 +73,15 @@ export default function Home() {
     [],
   );
 
-  // Calculate result when query values change
   useEffect(() => {
-    if (!query.distance || !query.fuelConsumption || !query.fuelPrice) {
-      return;
-    }
-
-    try {
-      const values = schema.parse({
-        distance: query.distance,
-        fuelConsumption: query.fuelConsumption,
-        fuelPrice: query.fuelPrice,
-      });
-      handleSubmit(values);
-    } catch {
-      // Query values aren't valid. This isn't an issue. User will see errors
-      // after modifying the form.
-    }
-  }, [query.distance, query.fuelConsumption, query.fuelPrice, handleSubmit]);
+    form.reset(query);
+    form.handleSubmit(handleSubmit, () => setResult(undefined))();
+  }, [form, handleSubmit, query]);
 
   useEffect(() => {
-    const subscription = form.watch(
-      ({ distance, fuelConsumption, fuelPrice }) => {
-        setQuery({ distance, fuelConsumption, fuelPrice });
-        form.handleSubmit(handleSubmit, () => setResult(undefined))();
-      },
-    );
-
+    const subscription = form.watch((values) => setQuery(values));
     return () => subscription.unsubscribe();
-  }, [form, handleSubmit, setQuery]);
+  }, [form, setQuery]);
 
   return (
     <m.main
